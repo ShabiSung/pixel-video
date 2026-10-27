@@ -1,0 +1,10 @@
+assets/img/
+assets/audio/
+assets/js/
+assets/gen/_*
+renders/
+snapshots/
+index.html
+voice.json
+__pycache__/
+node_modules/

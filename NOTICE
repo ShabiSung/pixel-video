@@ -1,0 +1,21 @@
+pixel-video
+Copyright 2026 Raco
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Bundled fonts (each with its license file in template/assets/fonts/):
+- Cubic 11 (https://github.com/ACh-K/Cubic-11), SIL Open Font License 1.1
+- Press Start 2P (https://fonts.google.com/specimen/Press+Start+2P),
+  Copyright 2012 The Press Start 2P Project Authors, SIL Open Font License 1.1
+
+Example images in template/assets/gen/ (arcade.png, hero.png, props.png) were
+generated with an AI image model for this project and are distributed under
+the same Apache License, Version 2.0.
+
+Third-party software used at run time (not included in this repository):
+- HyperFrames (https://github.com/heygen-com/hyperframes), by HeyGen
+- GSAP 3 (https://gsap.com), GreenSock standard license, downloaded by
+  template/tools/setup.py
+- Pillow (https://python-pillow.org), NumPy (https://numpy.org)
+- FFmpeg (https://ffmpeg.org)
+- Optional: OpenAI Codex CLI for image generation

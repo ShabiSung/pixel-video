@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-Hant" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>__TITLE__</title>
+    <script src="assets/js/gsap.min.js"></script>
+    <style>
+      @font-face { font-family:"Cubic11"; src:url(assets/fonts/Cubic_11.woff2) format("woff2"); font-display:block; }
+      @font-face { font-family:"PressStart"; src:url(assets/fonts/PressStart2P-Regular.ttf) format("truetype"); font-display:block; }
+      :root { --accent:#FFD166; --ink:#0B0716; }
+      *{margin:0;padding:0;box-sizing:border-box}
+      html,body{width:1080px;height:1920px;overflow:hidden;background:#07070F}
+      body{font-family:"Cubic11",sans-serif;color:#FFFFFF;-webkit-font-smoothing:none}
+      img{display:block;image-rendering:pixelated}
+      .abs{position:absolute}
+      .full{left:0;top:0;width:1080px;height:1920px}
+      .scene{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden;opacity:0}
+      .ps{font-family:"PressStart"}
+      /* 硬邊外框:8 個方向各偏一格的實色陰影,不要用模糊陰影 */
+      .o6{text-shadow:6px 0 var(--ink),-6px 0 var(--ink),0 6px var(--ink),0 -6px var(--ink),6px 6px var(--ink),-6px -6px var(--ink),6px -6px var(--ink),-6px 6px var(--ink)}
+      .o4{text-shadow:4px 0 var(--ink),-4px 0 var(--ink),0 4px var(--ink),0 -4px var(--ink),4px 4px var(--ink),-4px -4px var(--ink),4px -4px var(--ink),-4px 4px var(--ink)}
+      .px-box{background:#14102A;border:6px solid var(--accent);
+              clip-path:polygon(0 12px,12px 12px,12px 0,calc(100% - 12px) 0,calc(100% - 12px) 12px,100% 12px,100% calc(100% - 12px),calc(100% - 12px) calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,12px calc(100% - 12px),0 calc(100% - 12px))}
+      .hdr{left:0;top:210px;width:1080px;text-align:center;white-space:nowrap;visibility:hidden}
+      .hdr .st{font-family:"PressStart";font-size:32px;line-height:40px;color:var(--accent);display:block;margin-bottom:12px}
+      .hdr .nm{font-size:66px;line-height:80px}
+      .cap{left:0;top:1500px;width:1080px;text-align:center;font-size:66px;line-height:80px;visibility:hidden;white-space:nowrap}
+      .cap em{font-style:normal;color:var(--accent)}
+      .star{width:12px;height:12px}
+      .spark{width:36px;height:36px;visibility:hidden}
+      .spark::before,.spark::after{content:"";position:absolute;background:#FFF3C4}
+      .spark::before{left:12px;top:0;width:12px;height:36px}
+      .spark::after{left:0;top:12px;width:36px;height:12px}
+      .blk{width:120px;height:120px;background:#07070F;visibility:hidden}
+      #scan{background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 3px,transparent 3px 6px);pointer-events:none}
+      #vig{background:radial-gradient(ellipse at 50% 46%,transparent 55%,rgba(0,0,0,.5) 100%);pointer-events:none}
+      #flash{background:#FFFFFF;opacity:0}
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="__TOTAL__" data-width="1080" data-height="1920" data-fps="60">
+      <div id="world" class="abs full"></div>
+      <div id="caps"></div>
+      <div id="wm" class="abs ps" style="right:54px;top:72px;font-size:28px;opacity:.55"></div>
+      <div id="blks"></div>
+      <div id="flash" class="abs full"></div>
+      <div id="scan" class="abs full"></div>
+      <div id="vig" class="abs full"></div>
+      __AUDIO__
+    </div>
+
+    <script>
+      // 這個檔案通常不用改:畫面內容寫在 storyboard.json,時間和音效由 tools/build.py 算好塞進 DATA。
+      const DATA = __DATA__;
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const $ = (s) => document.querySelector(s);
+      const SZ = DATA.sizes, CELL = 6;
+      const snap = (v, g = CELL) => Math.round(v / g) * g;
+      let uid = 0;
+      const mk = (parent, cls, css, html) => { const d = document.createElement("div"); d.className = "abs " + (cls || ""); Object.assign(d.style, css || {}); if (html != null) d.innerHTML = html; (typeof parent === "string" ? $(parent) : parent).appendChild(d); return d; };
+      const im = (parent, name, css) => { const e = document.createElement("img"); e.src = "assets/img/" + name + ".png?u" + (uid++); e.className = "abs"; Object.assign(e.style, css || {}); parent.appendChild(e); return e; };
+      const on = (el, t) => tl.set(el, { visibility: "visible" }, t);
+      const off = (el, t) => tl.set(el, { visibility: "hidden" }, t);
+      const size = (name) => { if (!SZ[name]) throw new Error("assets/img/" + name + ".png 不存在(先跑 tools/process.py)"); return SZ[name]; };
+
+      // 方塊轉場(全片共用一組)
+      const BLK = [];
+      for (let r = 0; r < 16; r++) for (let c = 0; c < 9; c++) BLK.push([mk("#blks", "blk", { left: c * 120 + "px", top: r * 120 + "px" }), c + r]);
+      const wipe = (t) => BLK.forEach(([b, d]) => { on(b, t - 0.2 + d * 0.008); off(b, t + 0.05 + d * 0.008); });
+
+      const stars = (parent, seed, n = 26, H = 520) => {
+        let s = seed; const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+        for (let i = 0; i < n; i++) {
+          const d = mk(parent, "star", { left: snap(rnd() * 1060) + "px", top: snap(rnd() * H) + "px", background: i % 3 ? "#C9D6FF" : "#FFF3C4" });
+          for (let t = rnd() * 1.6; t + 0.5 < DATA.total; t += 1.6) { tl.set(d, { opacity: 1 }, t); tl.set(d, { opacity: 0.2 }, t + 0.5); }
+        }
+      };
+      const typeIn = (el, text, t0, dt) => [...text].forEach((ch, i) => { const s = document.createElement("span"); s.textContent = ch; s.style.visibility = "hidden"; el.appendChild(s); on(s, t0 + i * dt); });
+
+      // ---------- 角色與道具:一個 box 裝所有會用到的動作格,換動作 = 切換哪一張看得到 ----------
+      const things = {};
+      const thing = (parent, id, spec) => {
+        const k = spec.k || 1, names = spec.frames;
+        const [w0, h0] = size(spec.sprite);
+        const W = Math.max(...names.map((n) => size(n)[0])) * k, H = Math.max(...names.map((n) => size(n)[1])) * k;
+        // (x, y) = 腳底中心;box 寬高取所有動作格裡最大的,每一格貼底置中
+        const box = mk(parent, "", { left: snap(spec.x - W / 2) + "px", top: snap(spec.y - H) + "px", width: W + "px", height: H + "px", opacity: spec.show === false ? 0 : 1 });
+        const inner = mk(box, "", { left: "0", top: "0", width: W + "px", height: H + "px" });
+        const f = {};
+        names.forEach((n) => { const [w, h] = size(n); f[n] = im(inner, n, { left: snap((W - w * k) / 2) + "px", top: H - h * k + "px", width: w * k + "px", height: h * k + "px", visibility: n === spec.sprite ? "visible" : "hidden" }); });
+        const T = { box, inner, f, k, names };
+        things[id] = T;
+        return T;
+      };
+      const pose = (T, name, t) => T.names.forEach((n) => tl.set(T.f[n], { visibility: n === name ? "visible" : "hidden" }, t));
+      const face = (T, dir, t) => tl.set(T.inner, { scaleX: dir < 0 ? -1 : 1 }, t);
+
+      // ---------- 動作:時間、步數、位移都由 build.py 算好(a.t、a.dur、a.n、a.dx…) ----------
+      const DO = {
+        show: (T, a) => tl.set(T.box, { opacity: 1 }, a.t),
+        hide: (T, a) => tl.set(T.box, { opacity: 0 }, a.t),
+        pose: (T, a) => pose(T, a.sprite, a.t),
+        pop: (T, a) => { tl.set(T.box, { opacity: 1 }, a.t); tl.fromTo(T.box, { scale: 0.4 }, { scale: 1, duration: 0.12, ease: "steps(3)", immediateRender: false }, a.t); },
+        drop: (T, a) => { tl.set(T.box, { opacity: 1 }, a.t); tl.fromTo(T.box, { y: -a.h }, { y: 0, duration: a.dur, ease: "steps(" + a.n + ")", immediateRender: false }, a.t); },
+        slide: (T, a) => { tl.set(T.box, { opacity: 1 }, a.t); tl.fromTo(T.box, { x: a.dx }, { x: 0, duration: a.dur, ease: "steps(" + a.n + ")", immediateRender: false }, a.t); },
+        walk: (T, a) => {
+          face(T, a.dir, a.t);
+          for (let i = 0; i < a.n; i++) pose(T, a.frames[i % a.frames.length], a.t + i * a.step);
+          tl.fromTo(T.box, { x: a.x0 }, { x: a.x1, duration: a.dur, ease: "steps(" + a.n + ")", immediateRender: false }, a.t);
+          pose(T, a.end, a.t + a.dur); face(T, 1, a.t + a.dur);
+        },
+        hop: (T, a) => { tl.to(T.box, { y: -a.h, duration: 0.12, ease: "steps(3)" }, a.t); tl.to(T.box, { y: 0, duration: 0.12, ease: "steps(3)" }, a.t + 0.12); },
+        bob: (T, a) => { for (let i = 0; i < a.n; i++) tl.set(T.inner, { y: i % 2 ? 0 : -a.h }, a.t + i * a.step); tl.set(T.inner, { y: 0 }, a.t + a.n * a.step); },
+        loop: (T, a) => { for (let i = 0; i < a.n; i++) pose(T, a.frames[i % a.frames.length], a.t + i * a.step); pose(T, a.end, a.t + a.n * a.step); },
+        shake: (T, a) => { const el = T ? T.box : a.sceneEl; [12, -12, 6, 0].forEach((x, i) => tl.set(el, { x: x }, a.t + i * 0.05)); },
+        flash: (T, a) => { tl.set("#flash", { opacity: 0.85 }, a.t); tl.set("#flash", { opacity: 0.4 }, a.t + 0.05); tl.set("#flash", { opacity: 0 }, a.t + 0.1); },
+        big: (T, a) => {
+          const d = mk(a.sceneEl, "ps o6", { left: "0", top: a.y + "px", width: "1080px", textAlign: "center", fontSize: a.size + "px", lineHeight: a.size + 16 + "px", color: a.color, visibility: "hidden", whiteSpace: "nowrap" }, a.text);
+          on(d, a.t); tl.fromTo(d, { scale: 0.4 }, { scale: 1, duration: 0.12, ease: "steps(3)", immediateRender: false }, a.t);
+          if (a.until != null) off(d, a.until);
+        },
+        say: (T, a) => {
+          const b = mk(a.sceneEl, "px-box", { left: a.x + "px", top: a.y + "px", width: a.w + "px", padding: "30px 36px", fontSize: a.size + "px", lineHeight: Math.round(a.size * 1.3) + "px", visibility: "hidden", borderColor: a.color });
+          on(b, a.t); typeIn(b, a.text, a.t + 0.05, a.dt);
+          if (a.until != null) off(b, a.until);
+        },
+        type: (T, a) => {
+          const b = mk(a.sceneEl, "px-box", { left: "84px", top: a.y + "px", width: "912px", height: "132px", visibility: "hidden", borderColor: "#7FE3C0" });
+          const tx = mk(b, "", { left: "36px", top: "36px", fontSize: "44px", lineHeight: "56px", whiteSpace: "nowrap" }, '<span class="ps" style="font-size:28px;color:#7FE3C0">&gt;</span> ');
+          on(b, a.t); typeIn(tx, a.text, a.t + 0.1, a.dt);
+          if (a.until != null) off(b, a.until);
+        },
+        count: (T, a) => {   // 每個數字一個元素,輪流顯示(跳號)
+          const els = a.values.map((v) => mk(a.sceneEl, "ps o6", { left: "0", top: a.y + "px", width: "1080px", textAlign: "center", fontSize: a.size + "px", lineHeight: a.size + 16 + "px", color: a.color, visibility: "hidden" }, (a.label ? a.label + " " : "") + v));
+          els.forEach((e, i) => { on(e, a.t + i * a.step); if (i + 1 < els.length) off(e, a.t + (i + 1) * a.step); else if (a.until != null) off(e, a.until); });
+        },
+        stamp: (T, a) => {
+          const d = mk(a.sceneEl, "ps", { left: a.x + "px", top: a.y + "px", fontSize: "40px", lineHeight: "48px", padding: "12px 18px", color: a.color, border: "6px solid " + a.color, background: "rgba(10,6,16,.85)", visibility: "hidden" });
+          tl.set(d, { rotation: -10 }, 0); d.textContent = a.text;
+          on(d, a.t); tl.fromTo(d, { scale: 2 }, { scale: 1, duration: 0.12, ease: "steps(3)", immediateRender: false }, a.t);
+          if (a.until != null) off(d, a.until);
+        },
+        sparkle: (T, a) => a.pts.forEach(([x, y], i) => { const s = mk(a.sceneEl, "spark", { left: snap(x) + "px", top: snap(y) + "px" }); on(s, a.t + i * 0.08); off(s, a.t + 0.5 + i * 0.08); }),
+        sfx: () => {},
+      };
+
+      // ---------- 場景 ----------
+      DATA.scenes.forEach((S, si) => {
+        const s = mk("#world", "scene", {}); s.id = "scene_" + S.id;
+        if (S.color) s.style.background = S.color;
+        if (S.stars) stars(s, 17 + si * 31);
+        if (S.bg) {
+          const bg = im(s, "bg_" + S.bg, { left: "0", top: "0", width: "1080px", height: "1920px" });
+          if (S.enter === "mosaic" && S.mosaic) {   // 從馬賽克變清楚:m3 → m2 → m1 → 原圖
+            const ms = [3, 2, 1].map((k) => im(s, "bg_" + S.bg + "_m" + k, { left: "0", top: "0", width: "1080px", height: "1920px", visibility: "hidden" }));
+            ms.forEach((m, i) => { on(m, S.t0 + i * 0.09); off(m, S.t0 + (i + 1) * 0.09); });
+          }
+        }
+        tl.set(s, { opacity: 1 }, S.t0); tl.set(s, { opacity: 0 }, S.t1);
+        if (S.enter === "wipe" && si > 0) wipe(S.t0);
+        if (S.header) { const h = mk(s, "hdr o6", {}, '<span class="st">' + S.header[0] + '</span><span class="nm">' + S.header[1] + "</span>"); on(h, S.t0 + 0.1); }
+        Object.entries(S.things).forEach(([id, spec]) => thing(s, id, spec));
+        S.do.forEach((a) => { a.sceneEl = s; DO[a.verb](a.target ? things[a.target] : null, a); });
+      });
+
+      // ---------- 字幕:*關鍵詞* 上強調色,句尾標點拿掉 ----------
+      DATA.lines.forEach((ln, i) => {
+        if (DATA.noCaption.includes(i + 1)) return;
+        const h = ln.replace(/[，。、：；,.]+(」?)$/, "$1").replace(/\*([^*]+)\*/g, "<em>$1</em>");
+        const c = mk("#caps", "cap o6", {}, h);
+        const w = [...ln.replace(/\*/g, "")].reduce((n, ch) => n + (ch.charCodeAt(0) < 128 ? 0.55 : 1), 0);
+        if (w > 14.5) c.style.fontSize = Math.floor(66 * 14.5 / w) + "px";
+        on(c, DATA.times[i][0]); off(c, DATA.capEnd[i]);
+      });
+
+      $("#wm").textContent = DATA.watermark || "";
+      tl.set({}, {}, DATA.total);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

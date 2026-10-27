@@ -1,0 +1,68 @@
+{
+  "title": "pixel-video demo",
+  "watermark": "PIXEL",
+  "cps": 5.4,
+  "tail": 1.6,
+  "scenes": [
+    {
+      "id": "intro",
+      "from": 1,
+      "bg": "arcade",
+      "enter": "mosaic",
+      "header": ["PIXEL VIDEO", "像素影片"],
+      "actors": {
+        "hero": {"sprite": "hero_idle", "x": 240, "y": 1440}
+      },
+      "props": {
+        "frame": {"sprite": "frame", "x": 780, "y": 1110, "k": 2, "show": false}
+      },
+      "do": [
+        [[1, 0.2], "walk", "hero", {"to": 480}],
+        [[1, 1.5], "pose", "hero", "hero_wave"],
+        [2, "pose", "hero", "hero_point"],
+        [2, "type", "畫一間霓虹街機廳", {"y": 480}],
+        [[2, 1.6], "drop", "frame"],
+        [[2, 2.0], "sparkle", "frame"]
+      ]
+    },
+    {
+      "id": "move",
+      "from": 3,
+      "color": "#0B0D1F",
+      "stars": true,
+      "header": ["STAGE 2", "角色動起來"],
+      "actors": {
+        "hero": {"sprite": "hero_idle", "x": 180, "y": 1260}
+      },
+      "do": [
+        [[3, 0.1], "walk", "hero", {"to": 840}],
+        [[3, 2.2], "hop", "hero"],
+        [[3, 2.2], "pose", "hero", "hero_jump"],
+        [[3, 2.5], "pose", "hero", "hero_cheer"]
+      ]
+    },
+    {
+      "id": "sound",
+      "from": 4,
+      "bg": "arcade",
+      "header": ["STAGE 3", "8-bit 音效"],
+      "actors": {
+        "hero": {"sprite": "hero_type_a", "x": 300, "y": 1440}
+      },
+      "props": {
+        "synth": {"sprite": "synth", "x": 720, "y": 1440, "k": 2, "show": false},
+        "trophy": {"sprite": "trophy", "x": 540, "y": 1020, "k": 2, "show": false}
+      },
+      "do": [
+        [[4, 0.1], "drop", "synth"],
+        [[4, 0.4], "loop", "hero", {"frames": ["hero_type_a", "hero_type_b"], "until": 5, "sound": "type", "end": "hero_idle"}],
+        [[4, 0.4], "count", {"from": 0, "to": 99999, "label": "SCORE", "y": 600, "size": 48, "format": "{:06d}"}],
+        [5, "clear"],
+        [5, "pose", "hero", "hero_cheer"],
+        [[5, 0.3], "pop", "trophy"],
+        [[5, 0.4], "bob", "trophy", {"h": 12}],
+        [[5, 1.0], "stamp", "DONE", {"x": 660, "y": 760}]
+      ]
+    }
+  ]
+}

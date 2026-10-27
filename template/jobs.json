@@ -1,0 +1,53 @@
+{
+  "note": "要生的圖都列在這裡,tools/gen.py 照這份產提示詞(有 Codex CLI 就自動生),tools/process.py 照這份切圖。scene = 一張直式場景 1024×1536;sheet = 洋紅底素材表 1536×1024,items 由左上起逐列排。h = 目標高度(格,一格 6px;主角約 58 格高),group 相同的幾格維持同一比例(同一角色不同動作一樣大)。scene 加 \"key\": true = 天空畫成洋紅、處理時變透明(後面就能放星空或會動的東西)。sheet 加 \"grid\": true = 照格子切(角色靠太近會黏在一起時)。note = 整張共用的說明(角色長相);ref = 長相參考圖路徑(Codex 用 -i 附上)。",
+  "jobs": [
+    {
+      "id": "arcade",
+      "kind": "scene",
+      "zh": "霓虹街機廳",
+      "prompt": "Interior of a retro neon video game arcade at night, side view like a side-scrolling game: a long row of colorful upright arcade cabinets with glowing screens along the back wall, neon tube lights and glowing stars on the dark wall above, a claw machine on the far left edge, a prize counter on the far right edge, patterned arcade carpet. The lower part (from about 60% to 100% of the height) must be a plain, mostly empty carpet floor so game sprites can stand on it later; keep the bottom 20% simple and slightly darker."
+    },
+    {
+      "id": "hero",
+      "kind": "sheet",
+      "rows": 3,
+      "cols": 4,
+      "grid": true,
+      "note": "Every sprite is the same chibi kid adventurer (about 2 heads tall) drawn as a cute 16-bit SNES JRPG pixel sprite: a teal baseball cap worn slightly tilted; short dark brown hair; big round black eyes with one white highlight; small smile; an orange scarf; a cream short-sleeve shirt; a small brown backpack; navy shorts; red sneakers. The face, clothes and colors never change between poses; only the pose and the eyes change. The walking frames must show clearly different leg positions.",
+      "items": [
+        {"name": "hero_idle", "h": 58, "group": "hero", "zh": "站", "d": "front view, standing relaxed, arms down at the sides, normal eyes"},
+        {"name": "hero_blink", "h": 58, "group": "hero", "zh": "眨眼", "d": "front view, standing, eyes closed as two short lines"},
+        {"name": "hero_wave", "h": 58, "group": "hero", "zh": "揮手", "d": "front view, waving one hand high above the shoulder, happy ^ ^ eyes"},
+        {"name": "hero_surprised", "h": 58, "group": "hero", "zh": "驚訝", "d": "front view, both open hands raised beside the face, wide surprised eyes, mouth open"},
+        {"name": "hero_point", "h": 58, "group": "hero", "zh": "指", "d": "three-quarter view facing right, pointing to the right with the whole arm stretched out"},
+        {"name": "hero_cheer", "h": 58, "group": "hero", "zh": "歡呼", "d": "front view, both fists raised high above the head, big happy smile"},
+        {"name": "hero_side_a", "h": 58, "group": "hero", "zh": "側面走 a", "d": "side view facing right, walking, left leg forward and right leg back, arms swinging"},
+        {"name": "hero_side_b", "h": 58, "group": "hero", "zh": "側面走 b", "d": "side view facing right, walking, right leg forward and left leg back (the opposite step), arms swinging the other way"},
+        {"name": "hero_think", "h": 58, "group": "hero", "zh": "思考", "d": "front view, one hand on the chin, eyes looking up, thinking"},
+        {"name": "hero_jump", "h": 58, "group": "hero", "zh": "跳", "d": "front view, jumping in the air with knees bent and both arms up"},
+        {"name": "hero_type_a", "h": 58, "group": "hero", "zh": "打字 a", "d": "sitting on a small stool, side view facing right, typing on an open grey laptop resting on its lap, hands down on the keyboard"},
+        {"name": "hero_type_b", "h": 58, "group": "hero", "zh": "打字 b", "d": "the same sitting pose and laptop, one hand lifted slightly above the keyboard (the other typing frame)"}
+      ]
+    },
+    {
+      "id": "props",
+      "kind": "sheet",
+      "rows": 3,
+      "cols": 4,
+      "items": [
+        {"name": "cart", "h": 22, "zh": "遊戲卡帶", "d": "a retro game cartridge with a big blank light-grey label area"},
+        {"name": "token", "h": 22, "zh": "對話框金幣", "d": "a shiny gold coin shaped like a round speech bubble (comic chat bubble) with a small tail"},
+        {"name": "film", "h": 22, "zh": "底片捲", "d": "a film reel with a strip of film unrolling"},
+        {"name": "knob", "h": 22, "zh": "選台旋鈕", "d": "a big round TV channel selector knob with a pointer"},
+        {"name": "pencil", "h": 8, "zh": "鉛筆", "d": "a long yellow wooden pencil (horizontal)"},
+        {"name": "paperball", "h": 22, "zh": "紙團", "d": "a crumpled paper ball"},
+        {"name": "synth", "h": 22, "zh": "合成器", "d": "a small music synthesizer box with knobs and sliders"},
+        {"name": "speaker", "h": 22, "zh": "喇叭", "d": "a retro loudspeaker"},
+        {"name": "frame", "h": 22, "zh": "畫框", "d": "a gold picture frame with a tiny landscape painting inside"},
+        {"name": "mannequin", "h": 22, "zh": "木頭人偶", "d": "a small wooden artist mannequin figure"},
+        {"name": "trophy", "h": 22, "zh": "獎盃", "d": "a gold trophy cup"},
+        {"name": "drop", "h": 22, "zh": "汗珠", "d": "a blue water sweat drop"}
+      ]
+    }
+  ]
+}
